@@ -30,9 +30,9 @@ interface HistoryItem {
 
 const IslamicBrowser = () => {
   const [tabs, setTabs] = useState<Tab[]>([
-    { id: "1", title: "Islamic Web Browser", url: "https://islamqa.info", isActive: true }
+    { id: "1", title: "Islamic Web Browser", url: "about:blank", isActive: true }
   ]);
-  const [currentUrl, setCurrentUrl] = useState("https://islamqa.info");
+  const [currentUrl, setCurrentUrl] = useState("about:blank");
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([
     { id: "1", title: "IslamQA", url: "https://islamqa.info", category: "Islamic Knowledge" },
     { id: "2", title: "Quran.com", url: "https://quran.com", category: "Quran" },
@@ -41,8 +41,8 @@ const IslamicBrowser = () => {
     { id: "5", title: "Bayyinah TV", url: "https://bayyinah.tv", category: "Education" }
   ]);
   const [history, setHistory] = useState<HistoryItem[]>([]);
-  const [showBookmarks, setShowBookmarks] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
+  const [navigationHistory, setNavigationHistory] = useState<string[]>([]);
+  const [currentHistoryIndex, setCurrentHistoryIndex] = useState(-1);
   const [canGoBack, setCanGoBack] = useState(false);
   const [canGoForward, setCanGoForward] = useState(false);
   const { toast } = useToast();
@@ -97,24 +97,35 @@ const IslamicBrowser = () => {
 
   const navigateToUrl = (url: string) => {
     if (url && url !== "about:blank") {
-      // Add to history
+      // Add to browsing history
       const historyItem: HistoryItem = {
         id: Date.now().toString(),
-        title: url,
+        title: getDomainFromUrl(url),
         url: url,
         timestamp: new Date()
       };
       setHistory(prev => [historyItem, ...prev.slice(0, 99)]);
+      
+      // Update navigation history for back/forward functionality
+      const newNavigationHistory = navigationHistory.slice(0, currentHistoryIndex + 1);
+      newNavigationHistory.push(url);
+      setNavigationHistory(newNavigationHistory);
+      setCurrentHistoryIndex(newNavigationHistory.length - 1);
       
       // Update current tab
       setTabs(prev => prev.map(tab => 
         tab.isActive ? { ...tab, url: url, title: getDomainFromUrl(url) } : tab
       ));
       setCurrentUrl(url);
-      setCanGoBack(true);
       
-      // Simulate navigation
-      window.open(url, '_blank');
+      // Update navigation buttons
+      setCanGoBack(newNavigationHistory.length > 1);
+      setCanGoForward(false);
+      
+      toast({
+        title: "Navigating",
+        description: `Loading ${getDomainFromUrl(url)}`,
+      });
     }
   };
 
@@ -159,18 +170,47 @@ const IslamicBrowser = () => {
   };
 
   const goBack = () => {
-    toast({
-      title: "Going Back",
-      description: "Navigating to previous page",
-    });
-    setCanGoForward(true);
+    if (canGoBack && currentHistoryIndex > 0) {
+      const newIndex = currentHistoryIndex - 1;
+      const previousUrl = navigationHistory[newIndex];
+      setCurrentHistoryIndex(newIndex);
+      setCurrentUrl(previousUrl);
+      
+      // Update current tab
+      setTabs(prev => prev.map(tab => 
+        tab.isActive ? { ...tab, url: previousUrl, title: getDomainFromUrl(previousUrl) } : tab
+      ));
+      
+      setCanGoBack(newIndex > 0);
+      setCanGoForward(true);
+      
+      toast({
+        title: "Going Back",
+        description: `Navigated to ${getDomainFromUrl(previousUrl)}`,
+      });
+    }
   };
 
   const goForward = () => {
-    toast({
-      title: "Going Forward",
-      description: "Navigating to next page",
-    });
+    if (canGoForward && currentHistoryIndex < navigationHistory.length - 1) {
+      const newIndex = currentHistoryIndex + 1;
+      const nextUrl = navigationHistory[newIndex];
+      setCurrentHistoryIndex(newIndex);
+      setCurrentUrl(nextUrl);
+      
+      // Update current tab
+      setTabs(prev => prev.map(tab => 
+        tab.isActive ? { ...tab, url: nextUrl, title: getDomainFromUrl(nextUrl) } : tab
+      ));
+      
+      setCanGoForward(newIndex < navigationHistory.length - 1);
+      setCanGoBack(true);
+      
+      toast({
+        title: "Going Forward",
+        description: `Navigated to ${getDomainFromUrl(nextUrl)}`,
+      });
+    }
   };
 
   const refresh = () => {
@@ -181,7 +221,168 @@ const IslamicBrowser = () => {
   };
 
   const goHome = () => {
-    navigateToUrl("https://islamqa.info");
+    setCurrentUrl("about:blank");
+    setTabs(prev => prev.map(tab => 
+      tab.isActive ? { ...tab, url: "about:blank", title: "Islamic Web Browser" } : tab
+    ));
+  };
+
+  const renderWebContent = (url: string) => {
+    const domain = getDomainFromUrl(url);
+    
+    // Simulate different website contents based on domain
+    if (url.includes('quran.com')) {
+      return (
+        <div className="bg-white rounded-lg shadow-lg p-8 max-w-4xl mx-auto">
+          <div className="text-center mb-6">
+            <h1 className="text-3xl font-bold text-green-800 mb-2">📖 Quran.com</h1>
+            <p className="text-gray-600">The Noble Quran</p>
+          </div>
+          <div className="bg-green-50 p-6 rounded-lg mb-6">
+            <h2 className="text-xl font-semibold text-green-800 mb-4">Surah Al-Fatiha (The Opening)</h2>
+            <div className="space-y-4 text-right">
+              <p className="text-2xl text-green-900">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
+              <p className="text-lg text-gray-700">In the name of Allah, the Entirely Merciful, the Especially Merciful.</p>
+              <p className="text-2xl text-green-900">الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ</p>
+              <p className="text-lg text-gray-700">[All] praise is [due] to Allah, Lord of the worlds -</p>
+            </div>
+          </div>
+          <div className="text-center">
+            <p className="text-green-700">Experience the complete Quran with audio recitations, translations, and tafsir.</p>
+          </div>
+        </div>
+      );
+    }
+    
+    if (url.includes('islamqa.info')) {
+      return (
+        <div className="bg-white rounded-lg shadow-lg p-8 max-w-4xl mx-auto">
+          <div className="text-center mb-6">
+            <h1 className="text-3xl font-bold text-green-800 mb-2">❓ IslamQA</h1>
+            <p className="text-gray-600">Authentic Islamic Knowledge</p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="bg-green-50 p-6 rounded-lg">
+              <h3 className="text-lg font-semibold text-green-800 mb-3">Recent Questions</h3>
+              <ul className="space-y-2">
+                <li className="text-gray-700">• What are the conditions for valid prayer?</li>
+                <li className="text-gray-700">• Rulings on Islamic finance</li>
+                <li className="text-gray-700">• Proper etiquette for mosque visits</li>
+              </ul>
+            </div>
+            <div className="bg-blue-50 p-6 rounded-lg">
+              <h3 className="text-lg font-semibold text-blue-800 mb-3">Categories</h3>
+              <ul className="space-y-2">
+                <li className="text-gray-700">• Worship & Prayer</li>
+                <li className="text-gray-700">• Family & Marriage</li>
+                <li className="text-gray-700">• Business & Finance</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
+    if (url.includes('sunnah.com')) {
+      return (
+        <div className="bg-white rounded-lg shadow-lg p-8 max-w-4xl mx-auto">
+          <div className="text-center mb-6">
+            <h1 className="text-3xl font-bold text-green-800 mb-2">📚 Sunnah.com</h1>
+            <p className="text-gray-600">Hadith Collections</p>
+          </div>
+          <div className="bg-amber-50 p-6 rounded-lg mb-6">
+            <h3 className="text-lg font-semibold text-amber-800 mb-3">Hadith of the Day</h3>
+            <blockquote className="text-gray-700 italic border-l-4 border-amber-400 pl-4">
+              "The best of people are those who benefit others."
+            </blockquote>
+            <p className="text-sm text-gray-600 mt-2">- Prophet Muhammad (ﷺ)</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-4">
+            <div className="text-center p-4 bg-gray-50 rounded">
+              <h4 className="font-semibold">Sahih Bukhari</h4>
+              <p className="text-sm text-gray-600">7,563 Hadiths</p>
+            </div>
+            <div className="text-center p-4 bg-gray-50 rounded">
+              <h4 className="font-semibold">Sahih Muslim</h4>
+              <p className="text-sm text-gray-600">7,190 Hadiths</p>
+            </div>
+            <div className="text-center p-4 bg-gray-50 rounded">
+              <h4 className="font-semibold">Sunan Abu Dawud</h4>
+              <p className="text-sm text-gray-600">5,274 Hadiths</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
+    if (url.includes('google.com/search')) {
+      const searchQuery = new URLSearchParams(url.split('?')[1]).get('q') || '';
+      return (
+        <div className="bg-white rounded-lg shadow-lg p-8 max-w-4xl mx-auto">
+          <div className="text-center mb-6">
+            <h1 className="text-3xl font-bold text-blue-600 mb-2">🔍 Islamic Search Results</h1>
+            <p className="text-gray-600">Searching for: "{searchQuery}"</p>
+          </div>
+          <div className="space-y-4">
+            <div className="border-l-4 border-green-400 pl-4">
+              <h3 className="text-lg font-semibold text-green-800">IslamQA - {searchQuery}</h3>
+              <p className="text-gray-600">Authentic Islamic answers about {searchQuery} from scholars...</p>
+              <span className="text-sm text-green-600">islamqa.info</span>
+            </div>
+            <div className="border-l-4 border-blue-400 pl-4">
+              <h3 className="text-lg font-semibold text-blue-800">Quran.com - {searchQuery}</h3>
+              <p className="text-gray-600">Verses and references about {searchQuery} in the Holy Quran...</p>
+              <span className="text-sm text-blue-600">quran.com</span>
+            </div>
+            <div className="border-l-4 border-amber-400 pl-4">
+              <h3 className="text-lg font-semibold text-amber-800">Sunnah.com - {searchQuery}</h3>
+              <p className="text-gray-600">Hadith collections related to {searchQuery}...</p>
+              <span className="text-sm text-amber-600">sunnah.com</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
+    // Default content for other websites
+    return (
+      <div className="bg-white rounded-lg shadow-lg p-8 max-w-4xl mx-auto">
+        <div className="text-center mb-6">
+          <h1 className="text-3xl font-bold text-green-800 mb-2">🌐 {domain}</h1>
+          <p className="text-gray-600">Islamic Web Browser Content</p>
+        </div>
+        <div className="bg-green-50 p-6 rounded-lg mb-6">
+          <h3 className="text-lg font-semibold text-green-800 mb-3">Website Content</h3>
+          <p className="text-gray-700 mb-4">
+            You are now viewing content from: <strong>{url}</strong>
+          </p>
+          <p className="text-gray-600">
+            The Islamic Web Browser provides a safe, curated browsing experience with built-in Islamic features. 
+            All content is filtered to ensure it aligns with Islamic values and principles.
+          </p>
+        </div>
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="bg-blue-50 p-4 rounded-lg">
+            <h4 className="font-semibold text-blue-800 mb-2">Islamic Features</h4>
+            <ul className="text-sm text-gray-700 space-y-1">
+              <li>• Prayer time reminders</li>
+              <li>• Qibla direction indicator</li>
+              <li>• Islamic calendar integration</li>
+              <li>• Halal content filtering</li>
+            </ul>
+          </div>
+          <div className="bg-purple-50 p-4 rounded-lg">
+            <h4 className="font-semibold text-purple-800 mb-2">Safety Features</h4>
+            <ul className="text-sm text-gray-700 space-y-1">
+              <li>• Content screening</li>
+              <li>• Family-safe browsing</li>
+              <li>• Islamic compliance check</li>
+              <li>• Secure connection</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -291,14 +492,6 @@ const IslamicBrowser = () => {
             >
               <Bookmark className="w-4 h-4" />
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowBookmarks(!showBookmarks)}
-              className="w-8 h-8 p-0"
-            >
-              <Settings className="w-4 h-4" />
-            </Button>
           </div>
         </div>
       </div>
@@ -397,26 +590,8 @@ const IslamicBrowser = () => {
             </div>
           </div>
         ) : (
-          // Web Content Simulation
-          <div className="bg-white rounded-lg shadow-lg p-8 max-w-4xl mx-auto">
-            <h2 className="text-2xl font-bold mb-4 text-green-800">
-              Website Content: {getDomainFromUrl(currentUrl)}
-            </h2>
-            <p className="text-gray-600 mb-4">
-              This is a simulation of browsing to: <strong>{currentUrl}</strong>
-            </p>
-            <p className="text-gray-600">
-              In a real browser, this would display the actual website content. 
-              The Islamic Web Browser provides a safe, curated browsing experience 
-              with built-in Islamic features and content filtering.
-            </p>
-            <div className="mt-6 p-4 bg-green-50 rounded-lg">
-              <p className="text-green-800">
-                <strong>Islamic Features:</strong> Built-in prayer time reminders, 
-                Qibla direction, Islamic calendar, and curated halal content.
-              </p>
-            </div>
-          </div>
+          // Web Content Display
+          renderWebContent(currentUrl)
         )}
       </div>
     </div>
