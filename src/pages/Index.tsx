@@ -13,7 +13,7 @@ const Index = () => {
     { name: "YOUTUBE", icon: "🎥", url: "https://youtube.com", color: "bg-red-600" },
     { name: "chat gpt", icon: "🤖", url: "https://chat.openai.com", color: "bg-green-600" },
     { name: "facebook", icon: "📘", url: "https://facebook.com", color: "bg-blue-600" },
-    { name: "mewar wifi", icon: "📶", url: "#", color: "bg-purple-600" },
+    { name: "Islamic Browser", icon: "🕌", url: "/islamic-browser", color: "bg-emerald-600" },
     { name: "Code With H...", icon: "💻", url: "#", color: "bg-gray-600" },
   ];
 
@@ -55,7 +55,10 @@ const Index = () => {
   };
 
   const handleShortcutClick = (shortcut: typeof shortcuts[0]) => {
-    if (shortcut.url !== "#") {
+    if (shortcut.url.startsWith('/')) {
+      // Internal route
+      window.location.href = shortcut.url;
+    } else if (shortcut.url !== "#") {
       window.open(shortcut.url, '_blank');
     } else {
       toast({
