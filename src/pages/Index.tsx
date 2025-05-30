@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Search, Mic, Camera, Plus } from "lucide-react";
+import { Search, Mic, Camera, User, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -9,18 +9,11 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
 
-  const shortcuts = [
-    { name: "YOUTUBE", icon: "🎥", url: "https://youtube.com", color: "bg-red-600" },
-    { name: "chat gpt", icon: "🤖", url: "https://chat.openai.com", color: "bg-green-600" },
-    { name: "facebook", icon: "📘", url: "https://facebook.com", color: "bg-blue-600" },
-    { name: "Islamic Browser", icon: "🕌", url: "/islamic-browser", color: "bg-emerald-600" },
-    { name: "Code With H...", icon: "💻", url: "#", color: "bg-gray-600" },
-  ];
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      window.open(`https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`, '_blank');
+      // Navigate to Islamic browser with search
+      window.location.href = `/islamic-browser?search=${encodeURIComponent(searchQuery)}`;
     } else {
       toast({
         title: "Please enter a search query",
@@ -31,7 +24,7 @@ const Index = () => {
 
   const handleLuckySearch = () => {
     if (searchQuery.trim()) {
-      window.open(`https://www.google.com/search?q=${encodeURIComponent(searchQuery)}&btnI=1`, '_blank');
+      window.location.href = `/islamic-browser?search=${encodeURIComponent(searchQuery)}&lucky=true`;
     } else {
       toast({
         title: "I'm Feeling Lucky",
@@ -54,24 +47,17 @@ const Index = () => {
     });
   };
 
-  const handleShortcutClick = (shortcut: typeof shortcuts[0]) => {
-    if (shortcut.url.startsWith('/')) {
-      // Internal route
-      window.location.href = shortcut.url;
-    } else if (shortcut.url !== "#") {
-      window.open(shortcut.url, '_blank');
-    } else {
-      toast({
-        title: shortcut.name,
-        description: "This shortcut would open the respective app/website",
-      });
-    }
+  const handleSignIn = () => {
+    toast({
+      title: "Sign In",
+      description: "Sign in functionality would be implemented here",
+    });
   };
 
-  const handleAddShortcut = () => {
+  const handleSignUp = () => {
     toast({
-      title: "Add Shortcut",
-      description: "Feature to add new shortcuts would be implemented here",
+      title: "Sign Up",
+      description: "Sign up functionality would be implemented here",
     });
   };
 
@@ -81,50 +67,65 @@ const Index = () => {
       <header className="flex justify-between items-center p-4">
         <div className="flex items-center space-x-4">
           <Button variant="ghost" size="sm" className="text-gray-300 hover:text-white">
-            Gmail
+            Islamic Sites
           </Button>
           <Button variant="ghost" size="sm" className="text-gray-300 hover:text-white">
             Images
           </Button>
         </div>
         <div className="flex items-center space-x-3">
-          <Button variant="ghost" size="icon" className="text-gray-300 hover:text-white">
-            <div className="w-6 h-6 grid grid-cols-3 gap-0.5">
-              {Array.from({ length: 9 }).map((_, i) => (
-                <div key={i} className="w-1 h-1 bg-current rounded-full"></div>
-              ))}
-            </div>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-gray-300 hover:text-white flex items-center gap-2"
+            onClick={handleSignIn}
+          >
+            <User className="w-4 h-4" />
+            Sign In
           </Button>
-          <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-            SM
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-gray-300 hover:text-white flex items-center gap-2"
+            onClick={handleSignUp}
+          >
+            <UserPlus className="w-4 h-4" />
+            Sign Up
+          </Button>
+          <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+            IW
           </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col items-center justify-center px-4 -mt-20">
-        {/* Google Logo */}
+        {/* Islamic Web Logo */}
         <div className="mb-8">
           <h1 className="text-8xl font-normal text-white tracking-tight">
-            <span className="text-blue-500">G</span>
-            <span className="text-red-500">o</span>
-            <span className="text-yellow-500">o</span>
-            <span className="text-blue-500">g</span>
-            <span className="text-green-500">l</span>
-            <span className="text-red-500">e</span>
+            <span className="text-green-500">I</span>
+            <span className="text-emerald-400">S</span>
+            <span className="text-teal-400">L</span>
+            <span className="text-green-500">A</span>
+            <span className="text-emerald-400">M</span>
+            <span className="text-teal-400">I</span>
+            <span className="text-green-500">C</span>
+            <span className="mx-4 text-white">W</span>
+            <span className="text-green-500">E</span>
+            <span className="text-emerald-400">B</span>
           </h1>
         </div>
 
         {/* Search Bar */}
         <div className="w-full max-w-xl mb-8">
           <form onSubmit={handleSearch} className="relative">
-            <div className="relative flex items-center bg-gray-800 rounded-full border border-gray-600 hover:border-gray-500 focus-within:border-blue-500 transition-colors">
+            <div className="relative flex items-center bg-gray-800 rounded-full border border-gray-600 hover:border-gray-500 focus-within:border-green-500 transition-colors">
               <Search className="absolute left-4 w-5 h-5 text-gray-400" />
               <Input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search Google or type a URL"
+                placeholder="Search Islamic content or type a URL"
                 className="bg-transparent border-0 pl-12 pr-20 py-3 text-white placeholder-gray-400 focus:ring-0 focus:outline-none rounded-full"
               />
               <div className="absolute right-3 flex items-center space-x-2">
@@ -157,52 +158,31 @@ const Index = () => {
               variant="secondary"
               className="bg-gray-800 hover:bg-gray-700 text-white border border-gray-600"
             >
-              Google Search
+              Islamic Search
             </Button>
             <Button
               onClick={handleLuckySearch}
               variant="secondary"
               className="bg-gray-800 hover:bg-gray-700 text-white border border-gray-600"
             >
-              I'm Feeling Lucky
+              I'm Feeling Blessed
             </Button>
           </div>
         </div>
 
-        {/* Shortcuts */}
-        <div className="flex flex-wrap justify-center gap-6 max-w-2xl">
-          {shortcuts.map((shortcut, index) => (
-            <div
-              key={index}
-              onClick={() => handleShortcutClick(shortcut)}
-              className="flex flex-col items-center cursor-pointer group"
-            >
-              <div className={`w-12 h-12 rounded-full ${shortcut.color} flex items-center justify-center text-white text-xl mb-2 group-hover:scale-110 transition-transform`}>
-                {shortcut.icon}
-              </div>
-              <span className="text-xs text-gray-300 group-hover:text-white transition-colors">
-                {shortcut.name}
-              </span>
-            </div>
-          ))}
-          <div
-            onClick={handleAddShortcut}
-            className="flex flex-col items-center cursor-pointer group"
-          >
-            <div className="w-12 h-12 rounded-full bg-gray-700 border-2 border-dashed border-gray-500 flex items-center justify-center text-gray-400 group-hover:border-gray-300 group-hover:text-white transition-colors">
-              <Plus className="w-6 h-6" />
-            </div>
-            <span className="text-xs text-gray-300 group-hover:text-white transition-colors mt-2">
-              Add shortcut
-            </span>
-          </div>
+        {/* Islamic Quote */}
+        <div className="text-center bg-gray-900 p-6 rounded-lg border border-gray-700 max-w-2xl">
+          <p className="text-green-400 italic mb-2">
+            "And whoever relies upon Allah - then He is sufficient for him. Indeed, Allah will accomplish His purpose."
+          </p>
+          <p className="text-sm text-green-300">- Quran 65:3</p>
         </div>
       </main>
 
       {/* Footer */}
       <footer className="p-4 text-center">
         <Button variant="link" className="text-gray-400 hover:text-white text-sm">
-          Black
+          Islamic Theme
         </Button>
       </footer>
     </div>

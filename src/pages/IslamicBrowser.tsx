@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { ArrowLeft, ArrowRight, RotateCcw, Home, Bookmark, Globe, Plus, X, Search, Settings } from "lucide-react";
+import { ArrowLeft, ArrowRight, RotateCcw, Home, Bookmark, Globe, Plus, X, Search, User, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -47,6 +46,16 @@ const IslamicBrowser = () => {
   const [canGoForward, setCanGoForward] = useState(false);
   const { toast } = useToast();
 
+  // Initialize with search query if coming from main page
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchQuery = urlParams.get('search');
+    if (searchQuery) {
+      const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
+      navigateToUrl(searchUrl);
+    }
+  }, []);
+
   const islamicSites = [
     { name: "Quran.com", url: "https://quran.com", description: "Read and listen to the Holy Quran", icon: "📖" },
     { name: "IslamQA", url: "https://islamqa.info", description: "Islamic Q&A and Fatawa", icon: "❓" },
@@ -78,7 +87,7 @@ const IslamicBrowser = () => {
     if (tabs[tabIndex].isActive && newTabs.length > 0) {
       const nextActiveIndex = Math.min(tabIndex, newTabs.length - 1);
       newTabs[nextActiveIndex].isActive = true;
-      setCurrentUrl(newTabs[nextActiveIndex].url);
+      setCurrentUrl(newTabs[nextActiveActiveIndex].url);
     }
     
     setTabs(newTabs);
@@ -225,6 +234,20 @@ const IslamicBrowser = () => {
     setTabs(prev => prev.map(tab => 
       tab.isActive ? { ...tab, url: "about:blank", title: "Islamic Web Browser" } : tab
     ));
+  };
+
+  const handleSignIn = () => {
+    toast({
+      title: "Sign In",
+      description: "Sign in to save your browsing history and bookmarks",
+    });
+  };
+
+  const handleSignUp = () => {
+    toast({
+      title: "Sign Up",
+      description: "Create an account to sync your data across devices",
+    });
   };
 
   const renderWebContent = (url: string) => {
@@ -389,6 +412,33 @@ const IslamicBrowser = () => {
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex flex-col">
       {/* Browser Header */}
       <div className="bg-white border-b shadow-sm">
+        {/* Top Bar with Auth */}
+        <div className="flex justify-between items-center px-4 py-2 bg-gray-50 border-b">
+          <div className="flex items-center space-x-2">
+            <span className="text-sm text-gray-600">Islamic Web Browser</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-gray-600 hover:text-green-800 flex items-center gap-1"
+              onClick={handleSignIn}
+            >
+              <User className="w-3 h-3" />
+              Sign In
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-gray-600 hover:text-green-800 flex items-center gap-1"
+              onClick={handleSignUp}
+            >
+              <UserPlus className="w-3 h-3" />
+              Sign Up
+            </Button>
+          </div>
+        </div>
+
         {/* Tab Bar */}
         <div className="flex items-center bg-gray-100 px-2 py-1">
           {tabs.map((tab) => (
@@ -437,6 +487,7 @@ const IslamicBrowser = () => {
               onClick={goBack}
               disabled={!canGoBack}
               className="w-8 h-8 p-0"
+              title="Go Back"
             >
               <ArrowLeft className="w-4 h-4" />
             </Button>
@@ -446,6 +497,7 @@ const IslamicBrowser = () => {
               onClick={goForward}
               disabled={!canGoForward}
               className="w-8 h-8 p-0"
+              title="Go Forward"
             >
               <ArrowRight className="w-4 h-4" />
             </Button>
@@ -454,6 +506,7 @@ const IslamicBrowser = () => {
               size="sm"
               onClick={refresh}
               className="w-8 h-8 p-0"
+              title="Refresh"
             >
               <RotateCcw className="w-4 h-4" />
             </Button>
@@ -462,6 +515,7 @@ const IslamicBrowser = () => {
               size="sm"
               onClick={goHome}
               className="w-8 h-8 p-0"
+              title="Home"
             >
               <Home className="w-4 h-4" />
             </Button>
@@ -489,6 +543,7 @@ const IslamicBrowser = () => {
               size="sm"
               onClick={addBookmark}
               className="w-8 h-8 p-0"
+              title="Bookmark this page"
             >
               <Bookmark className="w-4 h-4" />
             </Button>
