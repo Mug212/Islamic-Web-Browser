@@ -1,11 +1,12 @@
-
 import { useState, useEffect } from "react";
-import { ArrowLeft, ArrowRight, RotateCcw, Home, Bookmark, Globe, Plus, X, Search, User, UserPlus } from "lucide-react";
+import { ArrowLeft, ArrowRight, RotateCcw, Home, Bookmark, Globe, Plus, X, Search, User, UserPlus, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 interface Tab {
   id: string;
@@ -29,6 +30,9 @@ interface HistoryItem {
 }
 
 const IslamicBrowser = () => {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
   const [tabs, setTabs] = useState<Tab[]>([
     { id: "1", title: "Islamic Web Browser", url: "about:blank", isActive: true }
   ]);
@@ -238,16 +242,18 @@ const IslamicBrowser = () => {
   };
 
   const handleSignIn = () => {
-    toast({
-      title: "Sign In",
-      description: "Sign in to save your browsing history and bookmarks",
-    });
+    navigate("/auth");
   };
 
   const handleSignUp = () => {
+    navigate("/auth");
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
     toast({
-      title: "Sign Up",
-      description: "Create an account to sync your data across devices",
+      title: "Signed Out",
+      description: "You have been successfully signed out",
     });
   };
 
@@ -419,24 +425,50 @@ const IslamicBrowser = () => {
             <span className="text-sm text-gray-600">Islamic Web Browser</span>
           </div>
           <div className="flex items-center space-x-2">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="text-gray-600 hover:text-green-800 flex items-center gap-1"
-              onClick={handleSignIn}
-            >
-              <User className="w-3 h-3" />
-              Sign In
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="text-gray-600 hover:text-green-800 flex items-center gap-1"
-              onClick={handleSignUp}
-            >
-              <UserPlus className="w-3 h-3" />
-              Sign Up
-            </Button>
+            {user ? (
+              // Authenticated user menu
+              <>
+                <div className="flex items-center space-x-2">
+                  <div className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                    {user.user_metadata?.full_name?.charAt(0) || user.email?.charAt(0) || 'U'}
+                  </div>
+                  <span className="text-xs text-gray-600">
+                    {user.user_metadata?.full_name || user.email}
+                  </span>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-gray-600 hover:text-green-800 flex items-center gap-1"
+                  onClick={handleSignOut}
+                >
+                  <LogOut className="w-3 h-3" />
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              // Non-authenticated user menu
+              <>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-gray-600 hover:text-green-800 flex items-center gap-1"
+                  onClick={handleSignIn}
+                >
+                  <User className="w-3 h-3" />
+                  Sign In
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-gray-600 hover:text-green-800 flex items-center gap-1"
+                  onClick={handleSignUp}
+                >
+                  <UserPlus className="w-3 h-3" />
+                  Sign Up
+                </Button>
+              </>
+            )}
           </div>
         </div>
 

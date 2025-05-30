@@ -1,13 +1,17 @@
 
 import { useState } from "react";
-import { Search, Mic, Camera, User, UserPlus } from "lucide-react";
+import { Search, Mic, Camera, User, UserPlus, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
+  const { user, signOut, loading } = useAuth();
+  const navigate = useNavigate();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,18 +52,31 @@ const Index = () => {
   };
 
   const handleSignIn = () => {
-    toast({
-      title: "Sign In",
-      description: "Sign in functionality would be implemented here",
-    });
+    navigate("/auth");
   };
 
   const handleSignUp = () => {
+    navigate("/auth");
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
     toast({
-      title: "Sign Up",
-      description: "Sign up functionality would be implemented here",
+      title: "Signed Out",
+      description: "You have been successfully signed out",
     });
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
@@ -74,27 +91,53 @@ const Index = () => {
           </Button>
         </div>
         <div className="flex items-center space-x-3">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-gray-300 hover:text-white flex items-center gap-2"
-            onClick={handleSignIn}
-          >
-            <User className="w-4 h-4" />
-            Sign In
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-gray-300 hover:text-white flex items-center gap-2"
-            onClick={handleSignUp}
-          >
-            <UserPlus className="w-4 h-4" />
-            Sign Up
-          </Button>
-          <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-            IW
-          </div>
+          {user ? (
+            // Authenticated user menu
+            <>
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                  {user.user_metadata?.full_name?.charAt(0) || user.email?.charAt(0) || 'U'}
+                </div>
+                <span className="text-sm text-gray-300">
+                  {user.user_metadata?.full_name || user.email}
+                </span>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-gray-300 hover:text-white flex items-center gap-2"
+                onClick={handleSignOut}
+              >
+                <LogOut className="w-4 h-4" />
+                Sign Out
+              </Button>
+            </>
+          ) : (
+            // Non-authenticated user menu
+            <>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-gray-300 hover:text-white flex items-center gap-2"
+                onClick={handleSignIn}
+              >
+                <User className="w-4 h-4" />
+                Sign In
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-gray-300 hover:text-white flex items-center gap-2"
+                onClick={handleSignUp}
+              >
+                <UserPlus className="w-4 h-4" />
+                Sign Up
+              </Button>
+              <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                IW
+              </div>
+            </>
+          )}
         </div>
       </header>
 
@@ -115,6 +158,16 @@ const Index = () => {
             <span className="text-emerald-400">B</span>
           </h1>
         </div>
+
+        {/* Welcome Message for Authenticated Users */}
+        {user && (
+          <div className="mb-6 text-center">
+            <p className="text-green-400 text-lg">
+              Assalamu Alaikum, {user.user_metadata?.full_name || user.email}!
+            </p>
+            <p className="text-gray-300 text-sm">May your browsing be blessed</p>
+          </div>
+        )}
 
         {/* Search Bar */}
         <div className="w-full max-w-xl mb-8">
