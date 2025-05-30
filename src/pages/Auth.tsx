@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,8 +20,14 @@ const Auth = () => {
   // Check if user is already authenticated
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      console.log("Checking authentication status...");
+      const { data: { session }, error } = await supabase.auth.getSession();
+      console.log("Current session:", session);
+      if (error) {
+        console.error("Session check error:", error);
+      }
       if (session) {
+        console.log("User already authenticated, redirecting...");
         navigate("/");
       }
     };
@@ -31,6 +36,8 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Starting sign up process...");
+    
     if (!email || !password || !fullName) {
       toast({
         title: "Missing Information",
@@ -40,8 +47,18 @@ const Auth = () => {
       return;
     }
 
+    if (password.length < 6) {
+      toast({
+        title: "Password Too Short",
+        description: "Password must be at least 6 characters long",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     try {
+      console.log("Attempting to sign up with:", { email, fullName });
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -52,7 +69,10 @@ const Auth = () => {
         },
       });
 
+      console.log("Sign up response:", { data, error });
+
       if (error) {
+        console.error("Sign up error:", error);
         if (error.message.includes("already registered")) {
           toast({
             title: "Account Exists",
@@ -67,6 +87,7 @@ const Auth = () => {
           });
         }
       } else {
+        console.log("Sign up successful:", data);
         toast({
           title: "Account Created Successfully!",
           description: "Welcome to Islamic Web! You can now start browsing.",
@@ -74,6 +95,7 @@ const Auth = () => {
         navigate("/");
       }
     } catch (error) {
+      console.error("Unexpected sign up error:", error);
       toast({
         title: "Error",
         description: "An unexpected error occurred",
@@ -86,6 +108,8 @@ const Auth = () => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Starting sign in process...");
+    
     if (!email || !password) {
       toast({
         title: "Missing Information",
@@ -97,12 +121,16 @@ const Auth = () => {
 
     setLoading(true);
     try {
+      console.log("Attempting to sign in with:", { email });
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
+      console.log("Sign in response:", { data, error });
+
       if (error) {
+        console.error("Sign in error:", error);
         if (error.message.includes("Invalid login credentials")) {
           toast({
             title: "Invalid Credentials",
@@ -117,6 +145,7 @@ const Auth = () => {
           });
         }
       } else {
+        console.log("Sign in successful:", data);
         toast({
           title: "Welcome Back!",
           description: "Successfully signed in to Islamic Web",
@@ -124,6 +153,7 @@ const Auth = () => {
         navigate("/");
       }
     } catch (error) {
+      console.error("Unexpected sign in error:", error);
       toast({
         title: "Error",
         description: "An unexpected error occurred",
@@ -135,6 +165,7 @@ const Auth = () => {
   };
 
   const handleGoogleSignIn = async () => {
+    console.log("Starting Google sign in...");
     setLoading(true);
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
@@ -144,7 +175,10 @@ const Auth = () => {
         },
       });
 
+      console.log("Google OAuth response:", { data, error });
+
       if (error) {
+        console.error("Google sign in error:", error);
         toast({
           title: "Google Sign In Failed",
           description: error.message,
@@ -152,6 +186,7 @@ const Auth = () => {
         });
       }
     } catch (error) {
+      console.error("Unexpected Google sign in error:", error);
       toast({
         title: "Error",
         description: "An unexpected error occurred with Google sign in",
