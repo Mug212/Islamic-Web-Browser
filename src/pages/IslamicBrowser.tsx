@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { ArrowLeft, ArrowRight, RotateCcw, Home, Bookmark, Globe, Plus, X, Search, User, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -87,7 +88,7 @@ const IslamicBrowser = () => {
     if (tabs[tabIndex].isActive && newTabs.length > 0) {
       const nextActiveIndex = Math.min(tabIndex, newTabs.length - 1);
       newTabs[nextActiveIndex].isActive = true;
-      setCurrentUrl(newTabs[nextActiveActiveIndex].url);
+      setCurrentUrl(newTabs[nextActiveIndex].url);
     }
     
     setTabs(newTabs);
